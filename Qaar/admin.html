@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <title>Admin Dashboard - Qaaraanka</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
+    .view-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
+    #login-wrapper { justify-content: center; } 
+    #dash-wrapper { justify-content: flex-start; max-width: 900px; margin: 0 auto; }
+    .login-box { background: #1e293b; border: 1px solid #334155; padding: 40px 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .header-area { width: 100%; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: flex-end; }
+    h1 { font-size: 24px; font-weight: 700; color: #38bdf8; }
+    p.subtitle { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+    .tabs-grid { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
+    @media (min-width: 600px) { .tabs-grid { grid-template-columns: repeat(4, 1fr); } }
+    .tab-btn { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .tab-btn.active { background: #0284c7; color: white; border-color: #0ea5e9; }
+    .panel { width: 100%; background: #1e293b; border: 1px solid #334155; padding: 24px; border-radius: 12px; display: none; }
+    .panel.active { display: block; }
+    h2 { font-size: 18px; margin-bottom: 16px; color: #f1f5f9; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    h3 { font-size: 16px; margin: 24px 0 12px 0; color: #38bdf8; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .stat-card { background: #0f172a; border: 1px solid #334155; padding: 20px; border-radius: 12px; }
+    .stat-card h4 { color: #94a3b8; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+    .stat-card .value { font-size: 32px; font-weight: 700; color: #f8fafc; }
+    input, select, textarea { width: 100%; padding: 12px; margin-bottom: 16px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; font-size: 15px; outline: none; }
+    input:focus, select:focus { border-color: #38bdf8; }
+    input[readonly] { background: #0f172a; color: #64748b; cursor: not-allowed; }
+    button.primary-btn { width: 100%; background: #0284c7; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; }
+    button.primary-btn:hover { background: #0369a1; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .add-btn { background: #10b981; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; border: none; cursor: pointer; }
+    .group-card { background: #0f172a; border: 1px solid #334155; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+    .group-title { padding: 14px; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; background: #1e293b; }
+    .group-title:hover { background: #334155; }
+    .members-list { display: none; padding: 10px; background: #0f172a; border-top: 1px solid #334155; }
+    .members-list.open { display: block; }
+    .member-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #1e293b; font-size: 14px; }
+    .member-item:last-child { border-bottom: none; }
+    .edit-icon { cursor: pointer; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .flex-row { display: flex; gap: 12px; }
+    .hidden { display: none !important; }
+    .brand-footer { text-align: center; padding: 20px; font-size: 12px; color: #475569; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+
+  <div class="view-wrapper" id="login-wrapper">
+    <div class="login-box">
+      <h2 style="text-align: center; border: none; font-size: 22px;">System Management</h2>
+      <input type="text" id="admin-user" placeholder="Admin Username">
+      <input type="password" id="admin-pass" placeholder="Password">
+      <button class="primary-btn" id="login-btn">Secure Login</button>
+      <a href="index.html" style="display: block; text-align: center; margin-top: 20px; color: #64748b; text-decoration: none; font-size: 14px;">&larr; Back to User Portal</a>
+    </div>
+  </div>
+
+  <div class="view-wrapper hidden" id="dash-wrapper">
+    
+    <div class="header-area">
+      <div>
+        <h1 id="greeting-text">Loading...</h1>
+        <p class="subtitle">System Management Console</p>
+      </div>
+      <button onclick="location.reload()" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Logout</button>
+    </div>
+
+    <div class="tabs-grid">
+      <button class="tab-btn active" onclick="switchTab('tab-home')">Overview</button>
+      <button class="tab-btn" onclick="switchTab('tab-pay')">Log Payment</button>
+      <button class="tab-btn" onclick="switchTab('tab-users')">Manage Users</button>
+      <button class="tab-btn" onclick="switchTab('tab-settings')">Settings</button>
+    </div>
+
+    <div class="panel active" id="tab-home">
+      <h2>System Overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><h4>Total Members</h4><div class="value" id="stat-members">--</div></div>
+        <div class="stat-card"><h4>Total Funds Collected</h4><div class="value" style="color: #22c55e;" id="stat-funds">$0.00</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="tab-pay">
+      <h2>Record a Contribution</h2>
+      <select id="pay-group"><option value="">1. Select Group Name...</option></select>
+      <select id="pay-member"><option value="">2. Select Member...</option></select>
+      <div class="flex-row">
+        <select id="pay-year"><option value="2026">2026</option><option value="2025">2025</option></select>
+        <select id="pay-month">
+          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
+          <option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
+          <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+        </select>
+      </div>
+      <select id="pay-type">
+        <option value="Standard">Standard Base Amount</option>
+        <option value="Other">Custom / Other Amount</option>
+      </select>
+      <input type="number" id="pay-amount" readonly>
+      <textarea id="pay-notes" rows="2" placeholder="Notes (Optional)"></textarea>
+      <button class="primary-btn" id="btn-save-payment">Save Payment</button>
+    </div>
+
+    <div class="panel" id="tab-users">
+      
+      <div id="view-directory">
+        <div class="list-header">
+          <h2 style="margin:0; border:none; padding:0;">User Directory</h2>
+          <button class="add-btn" onclick="toggleUserViews('add')">➕ Add New</button>
+        </div>
+        <div id="groups-accordion">Loading groups...</div>
+      </div>
+
+      <div id="view-add" class="hidden">
+        <div class="list-header">
+          <h2 style="margin:0; border:none; padding:0; color:#10b981;">Create New Records</h2>
+          <button class="add-btn" style="background:#64748b;" onclick="toggleUserViews('dir')">Cancel / Back</button>
+        </div>
+        
+        <h3>Create Group</h3>
+        <div class="flex-row">
+          <input type="text" id="add-l-name" placeholder="Group Name (e.g. Ali Family)">
+          <input type="text" id="add-l-phone" placeholder="Phone Number">
+        </div>
+        <button class="primary-btn" id="btn-add-leader" style="background: #0f766e; margin-bottom: 24px;">Save Group</button>
+
+        <h3>Create Sub-Member</h3>
+        <select id="add-m-group"><option value="">Assign to Group Name...</option></select>
+        <input type="text" id="add-m-name" placeholder="Member Full Name">
+        <input type="text" id="add-m-phone" placeholder="Phone Number (Optional)">
+        <div class="flex-row">
+          <input type="text" id="add-m-user" placeholder="Login Username">
+          <input type="password" id="add-m-pass" placeholder="Password">
+        </div>
+        <button class="primary-btn" id="btn-add-member" style="background: #0f766e;">Save Member</button>
+      </div>
+
+      <div id="view-edit" class="hidden">
+        <div class="list-header">
+          <h2 style="margin:0; border:none; padding:0; color:#f59e0b;">Edit Member Details</h2>
+          <button class="add-btn" style="background:#64748b;" onclick="toggleUserViews('dir')">Cancel / Back</button>
+        </div>
+        <input type="hidden" id="edit-m-id">
+        <label style="font-size: 13px; color: #94a3b8;">Full Name</label>
+        <input type="text" id="edit-m-name" placeholder="Update Full Name">
+        <label style="font-size: 13px; color: #94a3b8;">Username</label>
+        <input type="text" id="edit-m-user" placeholder="Update Username">
+        <label style="font-size: 13px; color: #94a3b8;">Password (Leave blank to keep current)</label>
+        <input type="text" id="edit-m-pass" placeholder="Update Password">
+        <button class="primary-btn" id="btn-update-member" style="background: #d97706;">Apply Updates</button>
+      </div>
+    </div>
+
+    <div class="panel" id="tab-settings">
+      <h2>Financial Settings</h2>
+      <label style="color: #94a3b8; font-size: 14px; display: block; margin-bottom: 8px;">Standard Monthly Contribution ($)</label>
+      <input type="number" id="setting-amount" value="3">
+      <button class="primary-btn" id="btn-save-settings" style="margin-bottom: 30px;">Save Global Amount</button>
+
+      <h2>Admin Profile</h2>
+      <label style="color: #94a3b8; font-size: 14px; display: block; margin-bottom: 8px;">Admin Username</label>
+      <input type="text" id="admin-profile-user">
+      <label style="color: #94a3b8; font-size: 14px; display: block; margin-bottom: 8px;">Admin Password</label>
+      <input type="text" id="admin-profile-pass">
+      <button class="primary-btn" id="btn-save-admin" style="background: #4f46e5;">Update Credentials</button>
+    </div>
+
+  </div>
+
+  <div class="brand-footer">
+    Qarashgareeyey Al Siraaj School | Sameeyey <a href="https://EngKhalidAA.github.io" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Eng. Khalid Ahmed A.</a>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient('https://wqrpmyxrtetltmgayglb.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxcnBteXhydGV0bHRtZ2F5Z2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTgyMDQsImV4cCI6MjA5NjQzNDIwNH0.8nxgyk7saMiRzECIgBvxh4Gn84KPq0oji90nEg6gMDc');
+    let globalAmt = 3.00;
+    let currentAdminId = null;
+
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+    window.switchTab = function(tabId) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+      if(tabId === 'tab-users') toggleUserViews('dir'); 
+    }
+
+    window.toggleUserViews = function(view) {
+      document.getElementById('view-directory').classList.add('hidden');
+      document.getElementById('view-add').classList.add('hidden');
+      document.getElementById('view-edit').classList.add('hidden');
+      if(view === 'dir') document.getElementById('view-directory').classList.remove('hidden');
+      if(view === 'add') document.getElementById('view-add').classList.remove('hidden');
+      if(view === 'edit') document.getElementById('view-edit').classList.remove('hidden');
+    }
+
+    window.toggleAccordion = function(groupId) {
+      document.getElementById('members-' + groupId).classList.toggle('open');
+    }
+
+    window.openEditModal = function(id, name, user, pass) {
+      toggleUserViews('edit');
+      document.getElementById('edit-m-id').value = id;
+      document.getElementById('edit-m-name').value = name;
+      document.getElementById('edit-m-user').value = user;
+      document.getElementById('edit-m-pass').value = pass && pass !== 'null' ? pass : '';
+    }
+
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const u = document.getElementById('admin-user').value;
+      const p = document.getElementById('admin-pass').value;
+      const btn = document.getElementById('login-btn');
+      
+      btn.innerText = "Verifying...";
+      const { data, error } = await supabase.from('admins').select('*').eq('username', u).eq('password', p).single();
+      
+      if(data) {
+        currentAdminId = data.id;
+        document.getElementById('admin-profile-user').value = data.username;
+        document.getElementById('admin-profile-pass').value = data.password;
+        document.getElementById('login-wrapper').classList.add('hidden');
+        document.getElementById('dash-wrapper').classList.remove('hidden');
+        
+        const hr = new Date().getHours();
+        const msg = hr < 12 ? 'Good Morning' : hr < 18 ? 'Good Afternoon' : 'Good Evening';
+        document.getElementById('greeting-text').innerText = `${msg}, Admin`;
+        initDashboard();
+      } else {
+        alert("Incorrect Admin Credentials");
+        btn.innerText = "Secure Login";
+      }
+    });
+
+    async function initDashboard() {
+      const { data: s } = await supabase.from('settings').select('standard_amount').single();
+      if(s) { globalAmt = s.standard_amount; document.getElementById('setting-amount').value = globalAmt; document.getElementById('pay-amount').value = globalAmt; }
+      
+      const { count } = await supabase.from('members').select('*', { count: 'exact', head: true });
+      document.getElementById('stat-members').innerText = count || 0;
+      const { data: funds } = await supabase.from('contributions').select('amount');
+      const total = funds ? funds.reduce((sum, row) => sum + parseFloat(row.amount), 0) : 0;
+      document.getElementById('stat-funds').innerText = `$${total.toFixed(2)}`;
+
+      loadData();
+    }
+
+    async function loadData() {
+      const { data: groups } = await supabase.from('groups').select('*');
+      const { data: members } = await supabase.from('members').select('*');
+      
+      const gSel = document.getElementById('pay-group');
+      const mGrp = document.getElementById('add-m-group');
+      gSel.innerHTML = '<option value="">1. Select Group Name...</option>';
+      mGrp.innerHTML = '<option value="">Assign to Group Name...</option>';
+      groups.forEach(g => {
+        gSel.innerHTML += `<option value="${g.id}">${g.leader_name} - ${g.phone}</option>`;
+        mGrp.innerHTML += `<option value="${g.id}">${g.leader_name} - ${g.phone}</option>`;
+      });
+
+      const acc = document.getElementById('groups-accordion');
+      acc.innerHTML = '';
+      groups.forEach(g => {
+        const gMembers = members.filter(m => m.group_id === g.id);
+        let memHtml = gMembers.map(m => `
+          <div class="member-item">
+            <span>${m.full_name} ${m.phone ? `- ${m.phone}` : ''} <small style="color:#64748b;">(@${m.username})</small></span>
+            <span class="edit-icon" onclick="openEditModal(${m.id}, '${m.full_name}', '${m.username}', '${m.password}')">✎ Edit</span>
+          </div>
+        `).join('');
+        if(!memHtml) memHtml = '<div class="member-item" style="color:#64748b;">No members assigned yet.</div>';
+
+        acc.innerHTML += `
+          <div class="group-card">
+            <div class="group-title" onclick="toggleAccordion(${g.id})">
+              ${g.leader_name} - ${g.phone} <span>▼</span>
+            </div>
+            <div class="members-list" id="members-${g.id}">
+              ${memHtml}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById('pay-group').addEventListener('change', async (e) => {
+      const mSel = document.getElementById('pay-member');
+      if(!e.target.value) return mSel.innerHTML = '<option value="">2. Select Member...</option>';
+      mSel.innerHTML = '<option value="">Loading members...</option>';
+      const { data: members } = await supabase.from('members').select('*').eq('group_id', e.target.value);
+      mSel.innerHTML = '<option value="">2. Select Member...</option>';
+      members.forEach(m => mSel.innerHTML += `<option value="${m.id}">${m.full_name} ${m.phone ? '- ' + m.phone : ''}</option>`);
+    });
+
+    document.getElementById('pay-type').addEventListener('change', (e) => {
+      const amtBox = document.getElementById('pay-amount');
+      if(e.target.value === 'Standard') { amtBox.value = globalAmt; amtBox.readOnly = true; }
+      else { amtBox.value = ''; amtBox.readOnly = false; amtBox.focus(); }
+    });
+
+    document.getElementById('btn-save-payment').addEventListener('click', async () => {
+      const data = {
+        member_id: document.getElementById('pay-member').value, year: document.getElementById('pay-year').value, month: document.getElementById('pay-month').value, amount: document.getElementById('pay-amount').value, payment_type: document.getElementById('pay-type').value, notes: document.getElementById('pay-notes').value
+      };
+      if(!data.member_id || !data.amount) return alert("Select member and amount!");
+      const { error } = await supabase.from('contributions').insert([data]);
+      alert(error ? error.message : "Payment Logged!");
+      if(!error) initDashboard();
+    });
+
+    document.getElementById('btn-add-leader').addEventListener('click', async () => {
+      const { error } = await supabase.from('groups').insert([{ leader_name: document.getElementById('add-l-name').value, phone: document.getElementById('add-l-phone').value }]);
+      alert(error ? error.message : "Group Created!");
+      if(!error) { document.getElementById('add-l-name').value=''; loadData(); toggleUserViews('dir'); }
+    });
+
+    document.getElementById('btn-add-member').addEventListener('click', async () => {
+      const { error } = await supabase.from('members').insert([{
+        group_id: document.getElementById('add-m-group').value, full_name: document.getElementById('add-m-name').value, phone: document.getElementById('add-m-phone').value, username: document.getElementById('add-m-user').value, password: document.getElementById('add-m-pass').value
+      }]);
+      alert(error ? error.message : "Member Created!");
+      if(!error) { loadData(); initDashboard(); toggleUserViews('dir'); }
+    });
+
+    document.getElementById('btn-update-member').addEventListener('click', async () => {
+      const id = document.getElementById('edit-m-id').value;
+      const { error } = await supabase.from('members').update({ full_name: document.getElementById('edit-m-name').value, username: document.getElementById('edit-m-user').value, password: document.getElementById('edit-m-pass').value }).eq('id', id);
+      alert(error ? error.message : "Member Updated!");
+      if(!error) { loadData(); toggleUserViews('dir'); }
+    });
+
+    document.getElementById('btn-save-settings').addEventListener('click', async () => {
+      const newAmt = document.getElementById('setting-amount').value;
+      const { error } = await supabase.from('settings').update({ standard_amount: newAmt }).eq('id', 1);
+      if(!error) { globalAmt = newAmt; document.getElementById('pay-amount').value = newAmt; alert("Amount Updated!"); }
+    });
+
+    document.getElementById('btn-save-admin').addEventListener('click', async () => {
+      const user = document.getElementById('admin-profile-user').value;
+      const pass = document.getElementById('admin-profile-pass').value;
+      if(!user || !pass) return alert("Username and Password required!");
+      const { error } = await supabase.from('admins').update({ username: user, password: pass }).eq('id', currentAdminId);
+      alert(error ? error.message : "Admin Credentials Updated!");
+    });
+  </script>
+</body>
+</html>
